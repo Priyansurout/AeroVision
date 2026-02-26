@@ -12,7 +12,6 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend (no GUI needed)
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
