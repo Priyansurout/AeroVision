@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.claude/
+
+# Model artifacts (regenerate with: python train_model.py)
+models/*.pkl
+
+# Generated chart images (regenerate with: python train_model.py)
+static/images/*.png

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Visualizations{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h2><i class="bi bi-graph-up me-2"></i>Data Analysis & Model Performance</h2>
+    <p>Explore data insights and ML model evaluation results</p>
+</div>
+
+<!-- Correlation Heatmap -->
+<div class="card-custom mb-4">
+    <div class="card-header-custom">
+        <i class="bi bi-grid-3x3 me-2"></i>Correlation Matrix
+    </div>
+    <div class="card-body text-center">
+        <p class="text-muted mb-3">Shows how strongly each pollutant correlates with others and with AQI.</p>
+        <img src="{{ url_for('static', filename='images/heatmap.png') }}"
+             class="img-fluid img-chart" alt="Correlation Heatmap" style="max-width: 700px;">
+    </div>
+</div>
+
+<!-- AQI Distribution -->
+<div class="card-custom mb-4">
+    <div class="card-header-custom">
+        <i class="bi bi-bar-chart me-2"></i>AQI Value Distribution
+    </div>
+    <div class="card-body text-center">
+        <p class="text-muted mb-3">Histogram showing how AQI values are distributed across the dataset.</p>
+        <img src="{{ url_for('static', filename='images/aqi_distribution.png') }}"
+             class="img-fluid img-chart" alt="AQI Distribution" style="max-width: 600px;">
+    </div>
+</div>
+
+<!-- Model Comparison -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card-custom h-100">
+            <div class="card-header-custom">
+                <i class="bi bi-trophy me-2"></i>Model Comparison - R2 Score
+            </div>
+            <div class="card-body">
+                <canvas id="r2Chart"></canvas>
+                <p class="text-center mt-3">
+                    <span class="model-tag"><i class="bi bi-info-circle me-1"></i>Higher is better (1.0 = perfect)</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-custom h-100">
+            <div class="card-header-custom">
+                <i class="bi bi-speedometer me-2"></i>Model Comparison - RMSE
+            </div>
+            <div class="card-body">
+                <canvas id="rmseChart"></canvas>
+                <p class="text-center mt-3">
+                    <span class="model-tag"><i class="bi bi-info-circle me-1"></i>Lower is better</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Importance -->
+<div class="card-custom mb-5">
+    <div class="card-header-custom">
+        <i class="bi bi-sort-down me-2"></i>Feature Importance - Which pollutants matter most?
+    </div>
+    <div class="card-body">
+        <canvas id="featChart" height="110"></canvas>
+    </div>
+</div>
+
+<!-- Key Findings -->
+<div class="about-section mb-5">
+    <h4 class="section-title text-center mb-4"><i class="bi bi-lightbulb me-2"></i>Key Findings</h4>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="stat-box text-start" style="padding: 20px;">
+                <strong style="color: #047857;"><i class="bi bi-1-circle me-1"></i> PM2.5 is #1</strong>
+                <p class="mb-0 mt-1" style="font-size: 0.85rem; color: #6b7280;">
+                    PM2.5 is the strongest predictor of AQI across both models.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-box text-start" style="padding: 20px;">
+                <strong style="color: #047857;"><i class="bi bi-2-circle me-1"></i> Key Drivers</strong>
+                <p class="mb-0 mt-1" style="font-size: 0.85rem; color: #6b7280;">
+                    CO, SO2, PM10, and NO2 are the secondary drivers of air quality.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-box text-start" style="padding: 20px;">
+                <strong style="color: #047857;"><i class="bi bi-3-circle me-1"></i> Model Agreement</strong>
+                <p class="mb-0 mt-1" style="font-size: 0.85rem; color: #6b7280;">
+                    Both Random Forest & XGBoost agree on feature ranking, confirming consistency.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const metrics = {{ metrics | tojson }};
+const featImp = {{ feat_imp | tojson }};
+
+// R2 Score chart
+new Chart(document.getElementById('r2Chart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: ['Random Forest', 'XGBoost'],
+        datasets: [{
+            label: 'R2 Score',
+            data: [metrics.rf_r2, metrics.xgb_r2],
+            backgroundColor: ['#047857', '#10b981'],
+            borderRadius: 8,
+            borderSkipped: false,
+            barThickness: 60
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, max: 1, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// RMSE chart
+new Chart(document.getElementById('rmseChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: ['Random Forest', 'XGBoost'],
+        datasets: [{
+            label: 'RMSE',
+            data: [metrics.rf_rmse, metrics.xgb_rmse],
+            backgroundColor: ['#047857', '#10b981'],
+            borderRadius: 8,
+            borderSkipped: false,
+            barThickness: 60
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// Feature Importance chart
+const features = featImp.features;
+const rfImp = featImp.rf_importance;
+const xgbImp = featImp.xgb_importance;
+
+const indices = features.map((_, i) => i).sort((a, b) => xgbImp[b] - xgbImp[a]);
+const sortedFeatures = indices.map(i => features[i]);
+const sortedRF = indices.map(i => rfImp[i]);
+const sortedXGB = indices.map(i => xgbImp[i]);
+
+new Chart(document.getElementById('featChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: sortedFeatures,
+        datasets: [
+            {
+                label: 'Random Forest',
+                data: sortedRF,
+                backgroundColor: '#047857',
+                borderRadius: 6,
+                borderSkipped: false
+            },
+            {
+                label: 'XGBoost',
+                data: sortedXGB,
+                backgroundColor: '#34d399',
+                borderRadius: 6,
+                borderSkipped: false
+            }
+        ]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Feature Importance - Random Forest vs XGBoost',
+                font: { size: 14, weight: 'bold' }
+            },
+            legend: {
+                labels: { font: { weight: '500' } }
+            }
+        },
+        scales: {
+            x: { grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { grid: { display: false }, ticks: { font: { weight: '500' } } }
+        }
+    }
+});
+</script>
+{% endblock %}

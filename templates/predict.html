@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Predict AQI{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h2><i class="bi bi-cpu me-2"></i>Predict Air Quality Index</h2>
+    <p>Enter pollutant concentration values to predict AQI and health category</p>
+</div>
+
+<!-- Prediction Form -->
+<div class="card-custom mb-4">
+    <div class="card-header-custom d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-sliders me-2"></i>Enter Pollutant Values</span>
+        <button type="button" class="btn btn-sm btn-green-outline" onclick="fillSample()">
+            <i class="bi bi-lightning me-1"></i>Fill Sample Values
+        </button>
+    </div>
+    <div class="card-body" style="padding: 30px;">
+        <form method="POST" action="/predict">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label-custom">PM2.5 (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="PM2.5" class="form-control form-control-custom"
+                           placeholder="e.g. 60" value="{{ result.inputs['PM2.5'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">PM10 (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="PM10" class="form-control form-control-custom"
+                           placeholder="e.g. 120" value="{{ result.inputs['PM10'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">NO (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="NO" class="form-control form-control-custom"
+                           placeholder="e.g. 15" value="{{ result.inputs['NO'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">NO2 (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="NO2" class="form-control form-control-custom"
+                           placeholder="e.g. 30" value="{{ result.inputs['NO2'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">NOx (ppb)</label>
+                    <input type="number" step="0.01" min="0" name="NOx" class="form-control form-control-custom"
+                           placeholder="e.g. 35" value="{{ result.inputs['NOx'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">NH3 (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="NH3" class="form-control form-control-custom"
+                           placeholder="e.g. 20" value="{{ result.inputs['NH3'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">CO (mg/m3)</label>
+                    <input type="number" step="0.01" min="0" name="CO" class="form-control form-control-custom"
+                           placeholder="e.g. 1.5" value="{{ result.inputs['CO'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">SO2 (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="SO2" class="form-control form-control-custom"
+                           placeholder="e.g. 12" value="{{ result.inputs['SO2'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">O3 (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="O3" class="form-control form-control-custom"
+                           placeholder="e.g. 30" value="{{ result.inputs['O3'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">Benzene (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="Benzene" class="form-control form-control-custom"
+                           placeholder="e.g. 3" value="{{ result.inputs['Benzene'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">Toluene (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="Toluene" class="form-control form-control-custom"
+                           placeholder="e.g. 8" value="{{ result.inputs['Toluene'] if result else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">Xylene (ug/m3)</label>
+                    <input type="number" step="0.01" min="0" name="Xylene" class="form-control form-control-custom"
+                           placeholder="e.g. 1" value="{{ result.inputs['Xylene'] if result else '' }}" required>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <button type="submit" class="btn btn-green btn-lg px-5">
+                    <i class="bi bi-lightning-charge me-2"></i>Predict AQI
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Result Card -->
+{% if result %}
+<div class="result-card mb-5">
+    <h5 class="text-muted mb-4"><i class="bi bi-check-circle me-1"></i>Prediction Result</h5>
+
+    <div class="result-aqi-value" style="color: {{ result.color }};">{{ result.aqi }}</div>
+
+    <div class="result-badge mb-3" style="background-color: {{ result.color }};">
+        {{ result.bucket }}
+    </div>
+
+    <!-- AQI Gauge Bar -->
+    <div class="aqi-gauge mx-auto mt-4" style="max-width: 500px;">
+        <div class="aqi-gauge-segment" style="width: 10%; background: #00b050;"></div>
+        <div class="aqi-gauge-segment" style="width: 10%; background: #92d050;"></div>
+        <div class="aqi-gauge-segment" style="width: 20%; background: #ffff00;"></div>
+        <div class="aqi-gauge-segment" style="width: 20%; background: #ff9900;"></div>
+        <div class="aqi-gauge-segment" style="width: 20%; background: #ff0000;"></div>
+        <div class="aqi-gauge-segment" style="width: 20%; background: #990000;"></div>
+        <div class="aqi-gauge-pointer" style="left: {{ [result.aqi / 5, 100] | min }}%;">&#9660;</div>
+    </div>
+    <div class="d-flex justify-content-between mx-auto mt-1" style="max-width: 500px;">
+        <small class="text-muted">0</small>
+        <small class="text-muted">100</small>
+        <small class="text-muted">200</small>
+        <small class="text-muted">300</small>
+        <small class="text-muted">400</small>
+        <small class="text-muted">500</small>
+    </div>
+
+    <div class="model-compare mt-4">
+        <span class="model-tag"><i class="bi bi-tree me-1"></i>Random Forest: <strong>{{ result.rf_aqi }}</strong></span>
+        <span class="model-tag"><i class="bi bi-rocket me-1"></i>XGBoost: <strong>{{ result.aqi }}</strong></span>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillSample() {
+    const samples = {
+        'PM2.5': 65.0, 'PM10': 130.0, 'NO': 17.5, 'NO2': 32.0,
+        'NOx': 38.0, 'NH3': 22.0, 'CO': 1.8, 'SO2': 14.0,
+        'O3': 28.0, 'Benzene': 3.5, 'Toluene': 9.0, 'Xylene': 1.2
+    };
+    for (const [name, val] of Object.entries(samples)) {
+        const input = document.querySelector(`input[name="${name}"]`);
+        if (input) input.value = val;
+    }
+}
+</script>
+{% endblock %}

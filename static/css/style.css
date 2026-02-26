@@ -1,0 +1,521 @@
+/* ============================================
+   AeroVision - Green Nature Theme
+   Air Quality = Clean Air = Green & Fresh
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --green-dark: #064e3b;
+    --green-mid: #047857;
+    --green-light: #10b981;
+    --green-glow: #34d399;
+    --green-pale: #d1fae5;
+    --green-bg: #ecfdf5;
+    --dark-bg: #022c22;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --text-dark: #1a1a2e;
+    --text-muted: #6b7280;
+    --gradient-main: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+    --gradient-hero: linear-gradient(135deg, #022c22 0%, #064e3b 40%, #047857 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%);
+    --shadow-green: 0 4px 25px rgba(16, 185, 129, 0.25);
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 12px 40px rgba(16, 185, 129, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--green-bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+/* ---- NAVBAR ---- */
+.navbar-custom {
+    background: var(--gradient-hero) !important;
+    padding: 12px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-bottom: 2px solid var(--green-glow);
+}
+
+.navbar-custom .navbar-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff !important;
+    text-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+}
+
+.navbar-custom .navbar-brand .brand-icon {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: var(--green-glow);
+    border-radius: 8px;
+    text-align: center;
+    line-height: 32px;
+    font-size: 18px;
+    margin-right: 8px;
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.6);
+}
+
+.navbar-custom .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+    padding: 8px 18px !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin: 0 2px;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+    color: #fff !important;
+    background: rgba(52, 211, 153, 0.2);
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.15);
+}
+
+/* ---- HERO SECTION ---- */
+.hero-section {
+    background: var(--gradient-hero);
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: -24px -12px 40px -12px;
+    border-radius: 0 0 40px 40px;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(52, 211, 153, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+    animation: float 15s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(2deg); }
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(52, 211, 153, 0.4);
+    position: relative;
+    z-index: 1;
+}
+
+.hero-section .hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--green-glow);
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-section .hero-desc {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* ---- CARDS ---- */
+.card-custom {
+    background: var(--gradient-card);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+}
+
+.card-custom:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--green-light);
+}
+
+.card-custom .card-header-custom {
+    background: var(--gradient-main);
+    color: #fff;
+    font-weight: 600;
+    padding: 14px 20px;
+    border: none;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+.card-custom .card-body {
+    padding: 24px;
+}
+
+/* Feature cards on home page */
+.feature-card {
+    text-align: center;
+    padding: 40px 24px;
+    border-radius: 20px;
+    background: white;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-main);
+}
+
+.feature-card:hover {
+    border-color: var(--green-light);
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+}
+
+.feature-card .feature-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+    background: var(--green-pale);
+    color: var(--green-mid);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+}
+
+.feature-card h5 {
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* ---- BUTTONS ---- */
+.btn-green {
+    background: var(--gradient-main);
+    color: #fff;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(4, 120, 87, 0.3);
+}
+
+.btn-green:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(4, 120, 87, 0.45);
+}
+
+.btn-green-outline {
+    background: transparent;
+    color: var(--green-mid);
+    border: 2px solid var(--green-light);
+    padding: 8px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-green-outline:hover {
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border-color: var(--green-mid);
+}
+
+/* ---- STAT CARDS ---- */
+.stat-box {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    box-shadow: var(--shadow-green);
+    transform: translateY(-3px);
+}
+
+.stat-box .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--green-mid);
+    line-height: 1;
+}
+
+.stat-box .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* ---- FORM STYLING ---- */
+.form-control-custom {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-control-custom:focus {
+    border-color: var(--green-light);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+    outline: none;
+}
+
+.form-label-custom {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+}
+
+/* ---- AQI RESULT ---- */
+.result-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: var(--shadow-green);
+    border: 2px solid var(--green-light);
+    position: relative;
+    overflow: hidden;
+}
+
+.result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--gradient-main);
+}
+
+.result-aqi-value {
+    font-size: 4.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.result-badge {
+    display: inline-block;
+    padding: 8px 30px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ---- AQI GAUGE ---- */
+.aqi-gauge {
+    height: 32px;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    position: relative;
+    border: 2px solid #e5e7eb;
+    background: #f3f4f6;
+}
+
+.aqi-gauge-segment {
+    height: 100%;
+}
+
+.aqi-gauge-pointer {
+    position: absolute;
+    top: -20px;
+    transform: translateX(-50%);
+    font-size: 18px;
+    color: var(--green-dark);
+    font-weight: bold;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ---- DASHBOARD ---- */
+.city-select {
+    border: 2px solid var(--green-light);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 500;
+    font-size: 1rem;
+    background: white;
+    color: var(--green-dark);
+}
+
+.city-select:focus {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    border-color: var(--green-mid);
+    outline: none;
+}
+
+.stat-mini {
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--green-pale);
+    margin-bottom: 12px;
+}
+
+.stat-mini .stat-mini-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--green-dark);
+    font-weight: 600;
+}
+
+.stat-mini .stat-mini-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--green-mid);
+}
+
+/* ---- SECTION HEADINGS ---- */
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+}
+
+/* ---- CHART CONTAINER ---- */
+.chart-container {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(16, 185, 129, 0.12);
+    box-shadow: var(--shadow-card);
+}
+
+/* ---- FOOTER ---- */
+.footer-custom {
+    background: var(--dark-bg);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 24px 0;
+    text-align: center;
+    margin-top: 60px;
+    border-top: 3px solid var(--green-mid);
+}
+
+.footer-custom .footer-brand {
+    color: var(--green-glow);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* ---- ABOUT SECTION ---- */
+.about-section {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    box-shadow: var(--shadow-card);
+}
+
+/* ---- PAGE HEADER ---- */
+.page-header {
+    background: var(--gradient-hero);
+    padding: 40px 0;
+    margin: -24px -12px 30px -12px;
+    border-radius: 0 0 30px 30px;
+    text-align: center;
+}
+
+.page-header h2 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.page-header p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+/* ---- COMPARE MODELS ---- */
+.model-compare {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.model-tag {
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--green-pale);
+    color: var(--green-dark);
+}
+
+/* ---- IMAGE CONTAINER ---- */
+.img-chart {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- PULSE ANIMATION for AQI result ---- */
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+    50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.4); }
+}
+
+.result-card {
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+    .hero-section h1 { font-size: 2.2rem; }
+    .hero-section { padding: 50px 0 40px; }
+    .result-aqi-value { font-size: 3rem; }
+    .page-header { padding: 30px 0; }
+    .page-header h2 { font-size: 1.5rem; }
+}

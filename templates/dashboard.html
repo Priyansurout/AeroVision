@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}City Dashboard{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h2><i class="bi bi-bar-chart me-2"></i>City Dashboard</h2>
+    <p>Compare air quality across Indian cities</p>
+</div>
+
+<!-- City Selector -->
+<div class="row mb-4">
+    <div class="col-md-5">
+        <label class="form-label-custom"><i class="bi bi-geo-alt me-1"></i>Select City</label>
+        <select id="citySelect" class="form-select city-select" onchange="updateDashboard()">
+            {% for city in cities %}
+            <option value="{{ city }}" {% if city == 'Delhi' %}selected{% endif %}>{{ city }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- City Stats -->
+    <div class="col-md-4">
+        <div class="card-custom h-100">
+            <div class="card-header-custom">
+                <i class="bi bi-clipboard-data me-2"></i>City Statistics
+            </div>
+            <div class="card-body">
+                <div class="stat-mini">
+                    <div class="stat-mini-label">Average AQI</div>
+                    <div class="stat-mini-value" id="statAvgAqi">-</div>
+                </div>
+                <div class="stat-mini" style="background: #fef3c7;">
+                    <div class="stat-mini-label" style="color: #92400e;">Maximum AQI</div>
+                    <div class="stat-mini-value" style="color: #d97706;" id="statMaxAqi">-</div>
+                </div>
+                <div class="stat-mini" style="background: #d1fae5;">
+                    <div class="stat-mini-label" style="color: #064e3b;">Minimum AQI</div>
+                    <div class="stat-mini-value" style="color: #047857;" id="statMinAqi">-</div>
+                </div>
+                <div class="stat-mini" style="background: #ede9fe;">
+                    <div class="stat-mini-label" style="color: #5b21b6;">Total Records</div>
+                    <div class="stat-mini-value" style="color: #7c3aed;" id="statCount">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AQI Trend Chart -->
+    <div class="col-md-8">
+        <div class="card-custom h-100">
+            <div class="card-header-custom">
+                <i class="bi bi-graph-up me-2"></i>Monthly AQI Trend
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- City Comparison Chart -->
+<div class="card-custom mb-5">
+    <div class="card-header-custom">
+        <i class="bi bi-bar-chart-steps me-2"></i>All Cities - Average AQI Comparison
+    </div>
+    <div class="card-body">
+        <canvas id="comparisonChart" height="130"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const summaryData = {{ summary | tojson }};
+let trendChart = null;
+
+// City comparison bar chart
+const compCtx = document.getElementById('comparisonChart').getContext('2d');
+const sortedSummary = [...summaryData].sort((a, b) => b.avg_aqi - a.avg_aqi);
+new Chart(compCtx, {
+    type: 'bar',
+    data: {
+        labels: sortedSummary.map(c => c.City),
+        datasets: [{
+            label: 'Average AQI',
+            data: sortedSummary.map(c => c.avg_aqi),
+            backgroundColor: sortedSummary.map(c => {
+                if (c.avg_aqi <= 50) return '#00b050';
+                if (c.avg_aqi <= 100) return '#92d050';
+                if (c.avg_aqi <= 200) return '#ffff00';
+                if (c.avg_aqi <= 300) return '#ff9900';
+                if (c.avg_aqi <= 400) return '#ff0000';
+                return '#990000';
+            }),
+            borderRadius: 6,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => `AQI: ${ctx.raw}`
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: { display: true, text: 'Average AQI', font: { weight: 'bold' } }
+            },
+            y: {
+                grid: { display: false },
+                ticks: { font: { weight: '500' } }
+            }
+        }
+    }
+});
+
+function updateDashboard() {
+    const city = document.getElementById('citySelect').value;
+
+    // Update stats
+    const info = summaryData.find(c => c.City === city);
+    if (info) {
+        document.getElementById('statAvgAqi').textContent = info.avg_aqi;
+        document.getElementById('statMaxAqi').textContent = info.max_aqi;
+        document.getElementById('statMinAqi').textContent = info.min_aqi;
+        document.getElementById('statCount').textContent = info.record_count;
+    }
+
+    // Fetch and update trend chart
+    fetch(`/api/city_trend/${encodeURIComponent(city)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (trendChart) trendChart.destroy();
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Average AQI',
+                        data: data.values,
+                        borderColor: '#047857',
+                        backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#047857',
+                        pointRadius: 2,
+                        pointHoverRadius: 6,
+                        borderWidth: 2.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Monthly AQI Trend - ${city}`,
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'AQI' },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxRotation: 45, maxTicksLimit: 15 }
+                        }
+                    }
+                }
+            });
+        });
+}
+
+// Initialize
+updateDashboard();
+</script>
+{% endblock %}

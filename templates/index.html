@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <h1><i class="bi bi-wind me-2"></i>AeroVision</h1>
+    <p class="hero-subtitle mt-3">AI-Powered Air Quality Index Prediction & Monitoring</p>
+    <p class="hero-desc mt-2">Analyzing air pollution across Indian cities using Machine Learning</p>
+</div>
+
+<!-- Feature Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card-custom feature-card h-100">
+            <div class="feature-icon">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h5>Predict AQI</h5>
+            <p>Enter pollutant values and get instant AQI prediction with health category classification.</p>
+            <a href="/predict" class="btn btn-green mt-2">
+                <i class="bi bi-arrow-right me-1"></i>Try Prediction
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom feature-card h-100">
+            <div class="feature-icon">
+                <i class="bi bi-bar-chart-line"></i>
+            </div>
+            <h5>City Dashboard</h5>
+            <p>Explore AQI trends, compare cities, and view pollution statistics across India.</p>
+            <a href="/dashboard" class="btn btn-green mt-2">
+                <i class="bi bi-arrow-right me-1"></i>View Dashboard
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom feature-card h-100">
+            <div class="feature-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h5>Visualizations</h5>
+            <p>View correlation heatmaps, model performance, and feature importance analysis.</p>
+            <a href="/visualizations" class="btn btn-green mt-2">
+                <i class="bi bi-arrow-right me-1"></i>Explore Charts
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+<div class="about-section mb-5">
+    <h4 class="section-title text-center mb-4"><i class="bi bi-database me-2"></i>About the Dataset</h4>
+    <div class="row g-3">
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">26</div>
+                <div class="stat-label">Indian Cities</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">29K+</div>
+                <div class="stat-label">Daily Records</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Pollutants Tracked</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">2015-20</div>
+                <div class="stat-label">Time Period</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pollutants Info -->
+<div class="about-section mb-5">
+    <h4 class="section-title text-center mb-4"><i class="bi bi-lungs me-2"></i>Pollutants We Track</h4>
+    <div class="row g-3 text-center">
+        <div class="col-4 col-md-2"><div class="stat-box"><strong>PM2.5</strong><div class="stat-label">Fine Dust</div></div></div>
+        <div class="col-4 col-md-2"><div class="stat-box"><strong>PM10</strong><div class="stat-label">Coarse Dust</div></div></div>
+        <div class="col-4 col-md-2"><div class="stat-box"><strong>NO2</strong><div class="stat-label">Nitrogen</div></div></div>
+        <div class="col-4 col-md-2"><div class="stat-box"><strong>CO</strong><div class="stat-label">Carbon Mono.</div></div></div>
+        <div class="col-4 col-md-2"><div class="stat-box"><strong>SO2</strong><div class="stat-label">Sulfur Diox.</div></div></div>
+        <div class="col-4 col-md-2"><div class="stat-box"><strong>O3</strong><div class="stat-label">Ozone</div></div></div>
+    </div>
+</div>
+{% endblock %}
