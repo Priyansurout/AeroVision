@@ -22,8 +22,7 @@ This project aims to analyze air quality data in India to gain insights into pol
 6. Model Selection
 7. Model Training
 8. Model Evaluation
-9. Hyperparameter Tuning
-10. Model Interpretation
+9. Model Interpretation
 
 Dataset Link: https://www.kaggle.com/datasets/rohanrao/air-quality-data-in-india
 
