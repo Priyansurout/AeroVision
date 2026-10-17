@@ -28,6 +28,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/live' %}active{% endif %}" href="/live">
+                            <i class="bi bi-broadcast me-1"></i>Live
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if request.path == '/predict' %}active{% endif %}" href="/predict">
                             <i class="bi bi-cpu me-1"></i>Predict AQI
                         </a>

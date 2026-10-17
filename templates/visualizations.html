@@ -113,11 +113,11 @@ const featImp = {{ feat_imp | tojson }};
 new Chart(document.getElementById('r2Chart').getContext('2d'), {
     type: 'bar',
     data: {
-        labels: ['Random Forest', 'XGBoost'],
+        labels: ['Random Forest', 'XGBoost', 'Gradient Boosting', 'Extra Trees'],
         datasets: [{
             label: 'R2 Score',
-            data: [metrics.rf_r2, metrics.xgb_r2],
-            backgroundColor: ['#047857', '#10b981'],
+            data: [metrics.rf_r2, metrics.xgb_r2, metrics.gb_r2, metrics.et_r2],
+            backgroundColor: ['#047857', '#10b981', '#6ee7b7', '#059669'],
             borderRadius: 8,
             borderSkipped: false,
             barThickness: 60
@@ -137,11 +137,11 @@ new Chart(document.getElementById('r2Chart').getContext('2d'), {
 new Chart(document.getElementById('rmseChart').getContext('2d'), {
     type: 'bar',
     data: {
-        labels: ['Random Forest', 'XGBoost'],
+        labels: ['Random Forest', 'XGBoost', 'Gradient Boosting', 'Extra Trees'],
         datasets: [{
             label: 'RMSE',
-            data: [metrics.rf_rmse, metrics.xgb_rmse],
-            backgroundColor: ['#047857', '#10b981'],
+            data: [metrics.rf_rmse, metrics.xgb_rmse, metrics.gb_rmse, metrics.et_rmse],
+            backgroundColor: ['#047857', '#10b981', '#6ee7b7', '#059669'],
             borderRadius: 8,
             borderSkipped: false,
             barThickness: 60
@@ -161,11 +161,15 @@ new Chart(document.getElementById('rmseChart').getContext('2d'), {
 const features = featImp.features;
 const rfImp = featImp.rf_importance;
 const xgbImp = featImp.xgb_importance;
+const gbImp = featImp.gb_importance;
+const etImp = featImp.et_importance;
 
 const indices = features.map((_, i) => i).sort((a, b) => xgbImp[b] - xgbImp[a]);
 const sortedFeatures = indices.map(i => features[i]);
 const sortedRF = indices.map(i => rfImp[i]);
 const sortedXGB = indices.map(i => xgbImp[i]);
+const sortedGB = indices.map(i => gbImp[i]);
+const sortedET = indices.map(i => etImp[i]);
 
 new Chart(document.getElementById('featChart').getContext('2d'), {
     type: 'bar',
@@ -185,6 +189,20 @@ new Chart(document.getElementById('featChart').getContext('2d'), {
                 backgroundColor: '#34d399',
                 borderRadius: 6,
                 borderSkipped: false
+            },
+            {
+                label: 'Gradient Boosting',
+                data: sortedGB,
+                backgroundColor: '#6ee7b7',
+                borderRadius: 6,
+                borderSkipped: false
+            },
+            {
+                label: 'Extra Trees',
+                data: sortedET,
+                backgroundColor: '#059669',
+                borderRadius: 6,
+                borderSkipped: false
             }
         ]
     },
@@ -194,7 +212,7 @@ new Chart(document.getElementById('featChart').getContext('2d'), {
         plugins: {
             title: {
                 display: true,
-                text: 'Feature Importance - Random Forest vs XGBoost',
+                text: 'Feature Importance - Model Comparison',
                 font: { size: 14, weight: 'bold' }
             },
             legend: {

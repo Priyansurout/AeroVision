@@ -6,3 +6,6 @@ xgboost
 matplotlib
 seaborn
 scipy
+requests
+python-dotenv
+gunicorn

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
 from sklearn.metrics import r2_score, mean_squared_error
 from xgboost import XGBRegressor
 
@@ -83,7 +83,9 @@ def train():
 
     # 8. Train models
     print("\n[5/8] Training Random Forest...")
-    rf_model = RandomForestRegressor(n_estimators=200, random_state=42)
+    rf_model = RandomForestRegressor(
+        n_estimators=200, max_depth=12, min_samples_leaf=5, random_state=42
+    )
     rf_model.fit(X_train, y_train)
     rf_preds = rf_model.predict(X_test)
 
@@ -92,6 +94,18 @@ def train():
     xgb_model.fit(X_train, y_train)
     xgb_preds = xgb_model.predict(X_test)
 
+    print("[5/8] Training Gradient Boosting...")
+    gb_model = GradientBoostingRegressor(n_estimators=200, learning_rate=0.1, random_state=42)
+    gb_model.fit(X_train, y_train)
+    gb_preds = gb_model.predict(X_test)
+
+    print("[5/8] Training Extra Trees...")
+    et_model = ExtraTreesRegressor(
+        n_estimators=200, max_depth=12, min_samples_leaf=5, random_state=42
+    )
+    et_model.fit(X_train, y_train)
+    et_preds = et_model.predict(X_test)
+
     # 9. Evaluate
     print("\n[6/8] Evaluating models...")
     metrics = {
@@ -99,15 +113,23 @@ def train():
         'rf_rmse': round(np.sqrt(mean_squared_error(y_test, rf_preds)), 4),
         'xgb_r2': round(r2_score(y_test, xgb_preds), 4),
         'xgb_rmse': round(np.sqrt(mean_squared_error(y_test, xgb_preds)), 4),
+        'gb_r2': round(r2_score(y_test, gb_preds), 4),
+        'gb_rmse': round(np.sqrt(mean_squared_error(y_test, gb_preds)), 4),
+        'et_r2': round(r2_score(y_test, et_preds), 4),
+        'et_rmse': round(np.sqrt(mean_squared_error(y_test, et_preds)), 4),
     }
-    print(f"  Random Forest  -> R2: {metrics['rf_r2']}, RMSE: {metrics['rf_rmse']}")
-    print(f"  XGBoost        -> R2: {metrics['xgb_r2']}, RMSE: {metrics['xgb_rmse']}")
+    print(f"  Random Forest      -> R2: {metrics['rf_r2']}, RMSE: {metrics['rf_rmse']}")
+    print(f"  XGBoost            -> R2: {metrics['xgb_r2']}, RMSE: {metrics['xgb_rmse']}")
+    print(f"  Gradient Boosting  -> R2: {metrics['gb_r2']}, RMSE: {metrics['gb_rmse']}")
+    print(f"  Extra Trees        -> R2: {metrics['et_r2']}, RMSE: {metrics['et_rmse']}")
 
     # 10. Feature importances
     feature_importance = {
         'features': FEATURE_COLUMNS,
         'rf_importance': rf_model.feature_importances_.tolist(),
         'xgb_importance': xgb_model.feature_importances_.tolist(),
+        'gb_importance': gb_model.feature_importances_.tolist(),
+        'et_importance': et_model.feature_importances_.tolist(),
     }
 
     # 11. Save all model artifacts
@@ -117,6 +139,8 @@ def train():
     artifacts = {
         'rf_model.pkl': rf_model,
         'xgb_model.pkl': xgb_model,
+        'gb_model.pkl': gb_model,
+        'et_model.pkl': et_model,
         'scaler.pkl': scaler,
         'model_metrics.pkl': metrics,
         'feature_importance.pkl': feature_importance,

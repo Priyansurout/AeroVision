@@ -519,3 +519,81 @@ body {
     .page-header { padding: 30px 0; }
     .page-header h2 { font-size: 1.5rem; }
 }
+
+/* ---- LIVE TAB: equal-height search buttons ---- */
+.btn-search {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+}
+
+/* ---- LIVE TAB: city autocomplete ---- */
+
+/* .card-custom clips its contents so the header gradient follows the rounded
+   corners; the search card must let the suggestion dropdown overflow instead.
+   The hover lift is dropped too, so the card doesn't shift while typing. */
+.card-search {
+    overflow: visible;
+}
+
+.card-search:hover {
+    transform: none;
+    box-shadow: var(--shadow-card);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
+.city-search {
+    position: relative;
+}
+
+.city-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.city-suggestions li {
+    display: flex;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.93rem;
+    transition: background 0.15s ease;
+}
+
+.city-suggestions li:hover,
+.city-suggestions li.active {
+    background: var(--green-pale);
+}
+
+.city-suggestions .bi {
+    color: var(--green-mid);
+}
+
+.city-suggestions .city-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.city-suggestions .city-region {
+    margin-left: auto;
+    padding-left: 12px;
+    font-size: 0.82rem;
+    color: #6b7280;
+}

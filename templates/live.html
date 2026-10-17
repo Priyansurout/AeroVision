@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+{% block title %}Live AQI{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h2><i class="bi bi-broadcast me-2"></i>Live Air Quality</h2>
+    <p>Real-time AQI for any city in the world, powered by OpenWeatherMap</p>
+</div>
+
+{% if not api_key_configured %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    No <code>OPENWEATHER_API_KEY</code> found. Add it to a <code>.env</code> file in the
+    project root and restart the app.
+</div>
+{% endif %}
+
+<!-- Search -->
+<div class="card-custom card-search mb-4">
+    <div class="card-body">
+        <form id="searchForm" class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label-custom" for="cityInput">
+                    <i class="bi bi-search me-1"></i>City
+                </label>
+                <div class="city-search">
+                    <input type="text" id="cityInput" class="form-control city-select"
+                           placeholder="Start typing a city name…" value="Delhi"
+                           autocomplete="off" role="combobox" aria-expanded="false"
+                           aria-controls="suggestions" required>
+                    <ul id="suggestions" class="city-suggestions d-none" role="listbox"></ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-green btn-search w-100">
+                    <i class="bi bi-broadcast me-1"></i>Get Live AQI
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button type="button" id="locateBtn" class="btn btn-green-outline btn-search w-100">
+                    <i class="bi bi-geo-alt me-1"></i>My Location
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- States -->
+<div id="loader" class="text-center py-5 d-none">
+    <div class="spinner-border text-success" role="status"></div>
+    <p class="mt-3 text-muted">Fetching live readings…</p>
+</div>
+
+<div id="errorBox" class="alert alert-danger d-none"></div>
+
+<!-- Results -->
+<div id="results" class="d-none">
+
+    <div class="row g-4 mb-4">
+        <!-- Model AQI -->
+        <div class="col-md-5">
+            <div class="card-custom h-100">
+                <div class="card-header-custom">
+                    <i class="bi bi-cpu me-2"></i>Predicted AQI (our model)
+                </div>
+                <div class="card-body text-center">
+                    <div id="locName" class="fw-bold mb-1"></div>
+                    <div id="locMeta" class="small text-muted mb-3"></div>
+                    <div class="result-aqi-value" id="modelAqi" style="font-size: 3.5rem; font-weight: 700;">-</div>
+                    <div id="modelBucket" class="model-tag d-inline-block mt-2"></div>
+                    <p class="small text-muted mt-3 mb-0">
+                        XGBoost model scoring the live pollutant readings on the
+                        0-500 Indian AQI scale.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- OpenWeather index + weather -->
+        <div class="col-md-7">
+            <div class="card-custom h-100">
+                <div class="card-header-custom">
+                    <i class="bi bi-cloud-sun me-2"></i>OpenWeather Index &amp; Conditions
+                </div>
+                <div class="card-body">
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">OpenWeather AQI (1-5 scale)</div>
+                        <div class="stat-mini-value" id="owmAqi">-</div>
+                    </div>
+                    <div class="row g-2 mt-2" id="weatherRow"></div>
+                    <div class="small text-muted mt-3" id="updatedAt"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pollutants -->
+    <div class="card-custom mb-4">
+        <div class="card-header-custom">
+            <i class="bi bi-moisture me-2"></i>Live Pollutant Concentrations
+        </div>
+        <div class="card-body">
+            <canvas id="pollutantChart" height="110"></canvas>
+            <p class="small text-muted mt-3 mb-0">
+                All values in µg/m³. NOx is approximated as NO + NO2; benzene, toluene
+                and xylene are not reported by the API and are treated as 0 by the model.
+            </p>
+        </div>
+    </div>
+
+    <!-- Forecast -->
+    <div class="card-custom mb-5">
+        <div class="card-header-custom">
+            <i class="bi bi-graph-up-arrow me-2"></i>Next 24 Hours Forecast
+        </div>
+        <div class="card-body">
+            <canvas id="forecastChart" height="120"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const el = id => document.getElementById(id);
+let pollutantChart = null, forecastChart = null;
+
+const AQI_COLORS = ['#00b050', '#92d050', '#ffff00', '#ff9900', '#ff0000'];
+
+function setBusy(busy) {
+    el('loader').classList.toggle('d-none', !busy);
+    if (busy) el('errorBox').classList.add('d-none');
+}
+
+function showError(msg) {
+    el('errorBox').textContent = msg;
+    el('errorBox').classList.remove('d-none');
+    el('results').classList.add('d-none');
+}
+
+function load(params) {
+    setBusy(true);
+    fetch('/api/live?' + new URLSearchParams(params))
+        .then(async r => {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.error || 'Request failed.');
+            return data;
+        })
+        .then(render)
+        .catch(e => showError(e.message))
+        .finally(() => setBusy(false));
+}
+
+function render(data) {
+    const loc = data.location;
+    el('locName').textContent = loc.name;
+    el('locMeta').textContent = [loc.state, loc.country].filter(Boolean).join(', ')
+        + `  ·  ${loc.lat.toFixed(2)}, ${loc.lon.toFixed(2)}`;
+
+    // Model prediction
+    el('modelAqi').textContent = data.model.aqi;
+    el('modelAqi').style.color = data.model.color;
+    const bucket = el('modelBucket');
+    bucket.textContent = data.model.bucket;
+    bucket.style.background = data.model.color;
+    bucket.style.color = ['#ffff00', '#92d050'].includes(data.model.color) ? '#1f2937' : '#fff';
+
+    // OpenWeather index
+    el('owmAqi').textContent = `${data.owm.index} — ${data.owm.label}`;
+    el('owmAqi').style.color = data.owm.color;
+
+    // Weather
+    const w = data.weather;
+    el('weatherRow').innerHTML = w ? [
+        ['thermometer-half', 'Temperature', `${w.temp} °C`],
+        ['droplet', 'Humidity', `${w.humidity}%`],
+        ['wind', 'Wind', w.wind_speed != null ? `${w.wind_speed} m/s` : '—'],
+        ['cloud', 'Conditions', w.description || '—'],
+    ].map(([icon, label, value]) => `
+        <div class="col-6">
+            <div class="stat-mini">
+                <div class="stat-mini-label"><i class="bi bi-${icon} me-1"></i>${label}</div>
+                <div class="stat-mini-value" style="font-size: 1.25rem;">${value}</div>
+            </div>
+        </div>`).join('') : '<div class="col-12 text-muted small">Weather unavailable.</div>';
+
+    el('updatedAt').innerHTML = '<i class="bi bi-clock me-1"></i>Measured '
+        + new Date(data.timestamp * 1000).toLocaleString();
+
+    drawPollutants(data.components);
+    drawForecast(data.forecast);
+    el('results').classList.remove('d-none');
+}
+
+function drawPollutants(c) {
+    const rows = [
+        ['PM2.5', c.pm2_5], ['PM10', c.pm10], ['NO', c.no], ['NO2', c.no2],
+        ['NH3', c.nh3], ['SO2', c.so2], ['O3', c.o3], ['CO', c.co],
+    ].filter(([, v]) => v != null);
+
+    if (pollutantChart) pollutantChart.destroy();
+    pollutantChart = new Chart(el('pollutantChart'), {
+        type: 'bar',
+        data: {
+            labels: rows.map(r => r[0]),
+            datasets: [{
+                label: 'µg/m³',
+                data: rows.map(r => r[1]),
+                backgroundColor: '#10b981',
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    type: 'logarithmic',
+                    title: { display: true, text: 'Concentration (µg/m³, log scale)' },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: { grid: { display: false }, ticks: { font: { weight: '500' } } }
+            }
+        }
+    });
+}
+
+function drawForecast(forecast) {
+    if (forecastChart) forecastChart.destroy();
+    forecastChart = new Chart(el('forecastChart'), {
+        type: 'line',
+        data: {
+            labels: forecast.map(f => new Date(f.timestamp * 1000)
+                .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+            datasets: [
+                {
+                    label: 'PM2.5 (µg/m³)',
+                    data: forecast.map(f => f.pm2_5),
+                    borderColor: '#047857',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    tension: 0.4, fill: true, borderWidth: 2.5, pointRadius: 2
+                },
+                {
+                    label: 'PM10 (µg/m³)',
+                    data: forecast.map(f => f.pm10),
+                    borderColor: '#f59e0b',
+                    tension: 0.4, borderWidth: 2.5, pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        afterBody: items => {
+                            const i = items[0].dataIndex;
+                            return `OpenWeather index: ${forecast[i].owm_index}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } }
+            }
+        }
+    });
+}
+
+// --- Events ---
+el('searchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    if (active >= 0) return pick(active);
+    closeSuggestions();
+    load({ city: input.value.trim() });
+});
+
+// --- City autocomplete ---
+const input = el('cityInput'), box = el('suggestions');
+let items = [], active = -1, debounce = null, seq = 0;
+
+function closeSuggestions() {
+    box.classList.add('d-none');
+    input.setAttribute('aria-expanded', 'false');
+    items = []; active = -1;
+}
+
+function highlight(i) {
+    active = i;
+    [...box.children].forEach((li, n) => {
+        li.classList.toggle('active', n === i);
+        li.setAttribute('aria-selected', n === i);
+    });
+    if (i >= 0) box.children[i].scrollIntoView({ block: 'nearest' });
+}
+
+function showSuggestions(results) {
+    items = results;
+    if (!results.length) return closeSuggestions();
+
+    box.innerHTML = results.map(r => `
+        <li role="option" aria-selected="false">
+            <i class="bi bi-geo-alt me-2"></i><span class="city-name">${r.name}</span>
+            <span class="city-region">${[r.state, r.country].filter(Boolean).join(', ')}</span>
+        </li>`).join('');
+    box.classList.remove('d-none');
+    input.setAttribute('aria-expanded', 'true');
+    highlight(-1);
+}
+
+function pick(i) {
+    const r = items[i];
+    if (!r) return;
+    input.value = r.label;
+    closeSuggestions();
+    load({ lat: r.lat, lon: r.lon, label: r.label });
+}
+
+input.addEventListener('input', () => {
+    const q = input.value.trim();
+    clearTimeout(debounce);
+    if (q.length < 2) return closeSuggestions();
+
+    const mine = ++seq;
+    debounce = setTimeout(() => {
+        fetch('/api/city_search?q=' + encodeURIComponent(q))
+            .then(r => r.json())
+            .then(d => { if (mine === seq) showSuggestions(d.results || []); })
+            .catch(() => closeSuggestions());
+    }, 250);
+});
+
+input.addEventListener('keydown', e => {
+    if (box.classList.contains('d-none')) return;
+    if (e.key === 'ArrowDown') {
+        e.preventDefault(); highlight((active + 1) % items.length);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault(); highlight((active - 1 + items.length) % items.length);
+    } else if (e.key === 'Enter' && active >= 0) {
+        e.preventDefault(); pick(active);
+    } else if (e.key === 'Escape') {
+        closeSuggestions();
+    }
+});
+
+box.addEventListener('mousedown', e => {
+    const li = e.target.closest('li');
+    if (li) { e.preventDefault(); pick([...box.children].indexOf(li)); }
+});
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.city-search')) closeSuggestions();
+});
+
+el('locateBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        return showError('Geolocation is not supported by this browser.');
+    }
+    setBusy(true);
+    navigator.geolocation.getCurrentPosition(
+        pos => load({
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            label: 'My Location'
+        }),
+        () => { setBusy(false); showError('Could not get your location. Allow location access or search by city.'); }
+    );
+});
+
+// Initial load
+load({ city: el('cityInput').value });
+</script>
+{% endblock %}
